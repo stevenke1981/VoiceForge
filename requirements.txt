@@ -1,0 +1,22 @@
+# VoiceForge - 相容性 requirements.txt
+# 建議使用 uv sync 代替 pip install -r requirements.txt
+qwen-asr>=0.0.6
+huggingface-hub>=0.25.0
+customtkinter>=5.2.0
+sounddevice>=0.5.0
+numpy>=1.26.0
+pydub>=0.25.1
+pyperclip>=1.9.0
+keyboard>=0.13.5
+pyautogui>=0.9.54
+torch>=2.1.0
+anthropic>=0.40.0
+openai>=1.50.0
+soundfile>=0.12.1
+opencc-python-reimplemented>=1.1.6
+
+# Optional: Google Generative AI client (install only if needed - may conflict with vllm)
+# google-generativeai>=0.8.0
+
+# Optional: vLLM for local acceleration (install explicitly if you need it)
+# vllm==0.14.0
