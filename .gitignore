@@ -16,6 +16,9 @@ uv.lock
 # Models (large files)
 models/
 
+# Secrets — never commit
+.env
+
 # Config (may contain API keys)
 config.json
 

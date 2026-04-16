@@ -53,6 +53,7 @@ class LLMPolisher:
             "anthropic": self._anthropic,
             "openai": self._openai,
             "google": self._google,
+            "gemma": self._google,   # alias: gemma → google provider
         }
 
         handler = dispatch.get(provider)
@@ -105,15 +106,30 @@ class LLMPolisher:
         return response.choices[0].message.content or ""
 
     def _google(self, text: str, prompt: str, model: str | None) -> str:
+        """Call Google AI via the google-genai SDK.
+
+        Supports both Gemma and Gemini models.
+        Default: gemma-4-26b-a4b-it (Gemma 4 MoE efficient variant).
+        """
         api_key = self._config.get("google_api_key", "")
         if not api_key:
             raise ValueError("Google API key not configured")
 
-        import google.generativeai as genai
+        from google import genai
+        from google.genai.types import GenerateContentConfig
 
-        genai.configure(api_key=api_key)
-        resolved_model = model or "gemini-2.0-flash"
+        # Pass api_key directly; avoid setting env vars to prevent
+        # "Both GOOGLE_API_KEY and GEMINI_API_KEY are set" warning.
+        client = genai.Client(api_key=api_key)
+        resolved_model = model or self._config.get("llm_model", "gemma-4-26b-a4b-it")
 
-        gen_model = genai.GenerativeModel(resolved_model)
-        response = gen_model.generate_content(f"{prompt}\n\n{text}")
+        response = client.models.generate_content(
+            model=resolved_model,
+            contents=f"{prompt}\n\n{text}",
+            config=GenerateContentConfig(
+                temperature=0.7,
+                max_output_tokens=2048,
+                top_p=0.95,
+            ),
+        )
         return response.text or ""

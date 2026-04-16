@@ -122,11 +122,27 @@ class SettingsPage(ctk.CTkFrame):
             self._key_entries[key] = entry
             row += 1
 
+        ctk.CTkLabel(scroll, text="LLM Provider:").grid(row=row, column=0, sticky="w", padx=10, pady=5)
+        self._llm_provider_var = ctk.StringVar(value=self._config.get("llm_provider", "google"))
+        ctk.CTkOptionMenu(
+            scroll, variable=self._llm_provider_var, width=180,
+            values=["google", "anthropic", "openai"],
+            command=self._on_provider_change,
+        ).grid(row=row, column=1, sticky="w", padx=10, pady=5)
+        row += 1
+
         ctk.CTkLabel(scroll, text="LLM 模型:").grid(row=row, column=0, sticky="w", padx=10, pady=5)
-        self._llm_model_var = ctk.StringVar(value=self._config.get("llm_model", "claude-sonnet-4-20250514"))
-        ctk.CTkEntry(scroll, textvariable=self._llm_model_var, width=320).grid(
-            row=row, column=1, sticky="w", padx=10, pady=5,
+        self._llm_model_var = ctk.StringVar(value=self._config.get("llm_model", "gemma-4-26b-a4b-it"))
+        self._llm_model_entry = ctk.CTkEntry(scroll, textvariable=self._llm_model_var, width=320)
+        self._llm_model_entry.grid(row=row, column=1, sticky="w", padx=10, pady=5)
+        row += 1
+
+        self._llm_model_hint = ctk.CTkLabel(
+            scroll,
+            text=self._provider_hint(self._llm_provider_var.get()),
+            font=ctk.CTkFont(size=11), text_color="gray",
         )
+        self._llm_model_hint.grid(row=row, column=0, columnspan=2, sticky="w", padx=10, pady=(0, 5))
         row += 1
 
         # ── Audio Section ──
@@ -265,6 +281,30 @@ class SettingsPage(ctk.CTkFrame):
 
         self._refresh_model_status()
 
+    # ------------------------------------------------------------------
+    # LLM provider helpers
+    # ------------------------------------------------------------------
+
+    _PROVIDER_DEFAULTS = {
+        "google": "gemma-4-26b-a4b-it",
+        "anthropic": "claude-sonnet-4-20250514",
+        "openai": "gpt-4o-mini",
+    }
+
+    _PROVIDER_HINTS = {
+        "google": "Gemma 4: gemma-4-26b-a4b-it / gemma-4-31b-it  |  Gemini: gemini-2.0-flash",
+        "anthropic": "claude-opus-4-6 / claude-sonnet-4-6 / claude-haiku-4-5-20251001",
+        "openai": "gpt-4o / gpt-4o-mini / o1-mini",
+    }
+
+    def _provider_hint(self, provider: str) -> str:
+        return self._PROVIDER_HINTS.get(provider, "")
+
+    def _on_provider_change(self, provider: str) -> None:
+        default = self._PROVIDER_DEFAULTS.get(provider, "")
+        self._llm_model_var.set(default)
+        self._llm_model_hint.configure(text=self._provider_hint(provider))
+
     @staticmethod
     def _section(parent: ctk.CTkBaseClass, title: str, row: int) -> int:
         ctk.CTkLabel(
@@ -374,6 +414,7 @@ class SettingsPage(ctk.CTkFrame):
             "device": self._device_var.get(),
             "max_new_tokens": int(self._tokens_var.get() or 256),
             "theme": self._theme_var.get(),
+            "llm_provider": self._llm_provider_var.get(),
             "llm_model": self._llm_model_var.get(),
             # v0.3 新增: 快捷功能
             "push_to_talk_enabled": self._ptt_enabled_var.get(),

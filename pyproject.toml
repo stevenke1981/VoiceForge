@@ -22,6 +22,7 @@ dependencies = [
     "anthropic>=0.40.0",
     "openai>=1.50.0",
     "soundfile>=0.12.1",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -40,7 +41,7 @@ vllm = [
 # conflict with vllm (installed via the vllm optional extras). Install only
 # when you need Google GenAI features.
 google = [
-    "google-generativeai>=0.8.0",
+    "google-genai>=1.0.0",
 ]
 
 [project.scripts]

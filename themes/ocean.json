@@ -1,4 +1,10 @@
 {
+  "CTk": {
+    "fg_color": ["#e0f7fa", "#0d2626"]
+  },
+  "CTkToplevel": {
+    "fg_color": ["#e0f7fa", "#0d2626"]
+  },
   "CTkButton": {
     "corner_radius": 6,
     "border_width": 0,
@@ -126,5 +132,37 @@
     "text_color": ["#1a1a2e", "#e0f2f1"],
     "scrollbar_button_color": ["#80cbc4", "#004d40"],
     "scrollbar_button_hover_color": ["#006064", "#00695c"]
+  },
+  "CTkRadioButton": {
+    "corner_radius": 1000,
+    "border_width_checked": 6,
+    "border_width_unchecked": 3,
+    "fg_color": ["#006064", "#004d40"],
+    "border_color": ["#80cbc4", "#004d40"],
+    "hover_color": ["#00838f", "#00695c"],
+    "text_color": ["#1a1a2e", "#e0f2f1"],
+    "text_color_disabled": ["#aaaaaa", "#888888"]
+  },
+  "DropdownMenu": {
+    "fg_color": ["#e0f7fa", "#0d3333"],
+    "hover_color": ["#b2ebf2", "#1a4a4a"],
+    "text_color": ["#1a1a2e", "#e0f2f1"]
+  },
+  "CTkFont": {
+    "macOS": {
+      "family": "SF Display",
+      "size": 13,
+      "weight": "normal"
+    },
+    "Windows": {
+      "family": "Roboto",
+      "size": 13,
+      "weight": "normal"
+    },
+    "Linux": {
+      "family": "Roboto",
+      "size": 13,
+      "weight": "normal"
+    }
   }
 }

@@ -7,10 +7,26 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+# Load .env on first import so all os.environ reads below see the values.
+# dotenv never overwrites variables already set by the shell.
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).parent.parent / ".env", override=False)
+except ImportError:
+    pass  # python-dotenv not installed; env vars must be set manually
+
+# Mapping: config key → environment variable name
+_ENV_KEY_MAP: dict[str, str] = {
+    "google_api_key": "GOOGLE_API_KEY",
+    "anthropic_api_key": "ANTHROPIC_API_KEY",
+    "openai_api_key": "OPENAI_API_KEY",
+}
 
 _DEFAULTS: dict[str, Any] = {
     "model_dir": "./models",
@@ -61,6 +77,11 @@ class ConfigManager:
     # ------------------------------------------------------------------
 
     def get(self, key: str, default: Any = None) -> Any:
+        # API keys: env var takes priority over config.json
+        if key in _ENV_KEY_MAP:
+            env_val = os.environ.get(_ENV_KEY_MAP[key], "")
+            if env_val:
+                return env_val
         return self._data.get(key, _DEFAULTS.get(key, default))
 
     def set(self, key: str, value: Any) -> None:

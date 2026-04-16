@@ -78,12 +78,11 @@ class ASREngine:
 
         self._model = Qwen3ASRModel.from_pretrained(str(model_path), **load_kwargs)
 
-        # Reload GenerationConfig from disk so all special-token IDs are plain
-        # Python integers rather than meta-device tensors that transformers
-        # may have created during model initialisation. Without this fix,
-        # model.generate() raises "Tensor.item() cannot be called on meta tensors".
-        if not resolved_device.startswith("cuda"):
-            self._fix_generation_config(model_path)
+        # Patch GenerationConfig on all devices:
+        # - CPU: fixes meta-tensor eos/pad IDs that cause Tensor.item() errors
+        # - CUDA: suppresses "generation flags not valid" warning when temperature
+        #   is set but do_sample=False (greedy decoding ignores temperature)
+        self._fix_generation_config(model_path)
 
         self._model_name = model_path.name
         self._device = resolved_device

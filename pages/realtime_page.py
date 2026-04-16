@@ -272,6 +272,22 @@ class RealtimePage(ctk.CTkFrame):
                 pass
         self._ptt_hooks = []
 
+    def _release_ptt_modifiers(self) -> None:
+        """Release all keys in the PTT hotkey immediately to prevent stuck modifiers.
+
+        Without this, Ctrl/Shift held during the hotkey remain "pressed" in the
+        system key state, so a subsequent Win key press is seen as Win+Ctrl or
+        Win+Shift — triggering Windows feature menus unexpectedly.
+        """
+        if not _SHORTCUTS_AVAILABLE:
+            return
+        ptt_key = self._config.get("push_to_talk_key", "ctrl+shift+space")
+        for part in ptt_key.split("+"):
+            try:
+                _kbd.release(part.strip())
+            except Exception:
+                pass
+
     def _ptt_press(self) -> None:
         """PTT hold mode — key down → start recording."""
         if not self._ptt_holding and not self._recorder.is_recording:
@@ -282,6 +298,7 @@ class RealtimePage(ctk.CTkFrame):
                 self._auto_send_hwnd = _ctypes.windll.user32.GetForegroundWindow()
             except Exception:
                 self._auto_send_hwnd = 0
+            self._release_ptt_modifiers()  # prevent Win-key interference
             self._ptt_triggered = True
             self.after(0, self._start_recording)
 
@@ -295,6 +312,7 @@ class RealtimePage(ctk.CTkFrame):
     def _ptt_toggle(self) -> None:
         """PTT toggle mode — each press toggles recording."""
         if self._recorder.is_recording:
+            self._release_ptt_modifiers()  # prevent Win-key interference
             self.after(0, self._stop_and_transcribe)
         else:
             # Capture target window before VoiceForge processes any tkinter events
@@ -302,6 +320,7 @@ class RealtimePage(ctk.CTkFrame):
                 self._auto_send_hwnd = _ctypes.windll.user32.GetForegroundWindow()
             except Exception:
                 self._auto_send_hwnd = 0
+            self._release_ptt_modifiers()  # prevent Win-key interference
             self._ptt_triggered = True
             self.after(0, self._start_recording)
 
@@ -341,13 +360,6 @@ class RealtimePage(ctk.CTkFrame):
                 except Exception:
                     pass  # SetForegroundWindow may fail; try keyboard.send anyway
                 _kbd.send("ctrl+v")
-                # Release all PTT modifier keys to prevent stuck keys in target window
-                _ptt_key = self._config.get("push_to_talk_key", "ctrl+shift+space")
-                for _part in _ptt_key.split("+"):
-                    try:
-                        _kbd.release(_part.strip())
-                    except Exception:
-                        pass
                 self.after(0, lambda: self._lbl_status.configure(text="✅ 辨識完成　📤 已發送"))
             except Exception as exc:
                 logger.warning("Auto-send failed: %s", exc)
